@@ -1,0 +1,20 @@
+name: "CouchDB"
+description: "CouchDB add-on!"
+version: "0.0.1"
+slug: "couchdb"
+init: false
+legacy: true
+arch:
+  - aarch64
+  - amd64
+  - armv7
+ports:
+  5984/tcp: 5984
+ports_description:
+  5984/tcp: "CouchDB access port"
+options:
+  COUCHDB_USER: null
+  COUCHDB_PASSWORD: null
+schema:
+  COUCHDB_USER: str
+  COUCHDB_PASSWORD: password
