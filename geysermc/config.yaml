@@ -1,6 +1,6 @@
 name: "GeyserMC"
 description: "GeyserMC add-on!"
-version: "0.0.1"
+version: "0.0.2"
 slug: "geysermc"
 init: false
 arch:
@@ -8,9 +8,9 @@ arch:
   - amd64
   - armv7
 ports:
-  19132/tcp: 19132
+  19132/udp: 19132
 ports_description:
-  19132/tcp: "GeyserMC access port"
+  19132/udp: "GeyserMC access port"
 # options:
 #   COUCHDB_USER: null
 #   COUCHDB_PASSWORD: null
