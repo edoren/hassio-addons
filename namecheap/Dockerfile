@@ -9,8 +9,12 @@ RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags
 RUN unzip "namecheap-ddns-docker.zip" 
 RUN mv namecheap-ddns-docker-* /build
 
+COPY docker-entrypoint.sh /
+RUN chmod 700 /build/container-entrypoint.sh
+RUN chmod 700 /docker-entrypoint.sh
+
 WORKDIR /build
-RUN go mod download && go build -o ncddns
+RUN go mod download && go build -ldflags "-s -w" -o ncddns
 
 # Run image
 ARG BUILD_FROM=$BUILD_FROM
@@ -20,9 +24,7 @@ RUN addgroup -g 1000 ncddns && adduser -h /app -u 1000 -G ncddns -s /bin/bash -D
 
 COPY --from=build --chown=ncddns:ncddns /build/ncddns /app/ncddns
 COPY --from=build --chown=ncddns:ncddns /build/container-entrypoint.sh /app/container-entrypoint.sh
-COPY --chown=ncddns:ncddns docker-entrypoint.sh /
-RUN chmod 700 /docker-entrypoint.sh
-RUN chmod 700 /app/container-entrypoint.sh
+COPY --from=build --chown=ncddns:ncddns /docker-entrypoint.sh /
 
 RUN apk update && apk --no-cache add tini bash
 
