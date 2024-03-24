@@ -2,7 +2,7 @@
 ARG BUILD_FROM=alpine
 FROM $BUILD_FROM as build
 
-RUN apk add --no-cache --virtual .porkbun-ddns-rs-build curl unzip rust cargo
+RUN apk add --no-cache --virtual .porkbun-ddns-rs-build curl unzip pkgconfig openssl-dev rust cargo
 
 RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/heads/master.zip" -o porkbun-ddns-rs.zip
 
@@ -24,7 +24,7 @@ RUN addgroup -g 1000 pbddns && adduser -h /app -u 1000 -G pbddns -s /bin/bash -D
 COPY --from=build --chown=pbddns:pbddns /build/target/release/porkbun_ddns_rs /app
 COPY --from=build --chown=pbddns:pbddns /docker-entrypoint.sh /
 
-RUN apk update && apk --no-cache add tini bash
+RUN apk update && apk --no-cache add tini bash libstdc++
 
 # Build arguments
 ARG BUILD_ARCH
