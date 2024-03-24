@@ -9,4 +9,4 @@ secrets_json_fmt='{"api_key": "%s", "secret_key": "%s"}'
 printf -v secrets_json "$secrets_json_fmt" $api_key $secret_key
 echo "$secrets_json" > secrets.json
 
-/app/porkbun_ddns_rs $domain --subdomains $subdomains --secrets secrets.json
+./porkbun_ddns_rs $domain --subdomains "$subdomains" --secrets secrets.json
