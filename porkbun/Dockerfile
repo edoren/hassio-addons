@@ -4,7 +4,7 @@ FROM $BUILD_FROM as build
 
 RUN apk add --no-cache --virtual .porkbun-ddns-rs-build curl unzip pkgconfig openssl-dev rust cargo
 
-RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/tags/v0.1.0.zip" -o porkbun-ddns-rs.zip
+RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/tags/v0.1.1.zip" -o porkbun-ddns-rs.zip
 
 RUN unzip "porkbun-ddns-rs.zip" 
 RUN mv porkbun-ddns-rs-* /build
@@ -19,10 +19,8 @@ RUN cargo build -r
 ARG BUILD_FROM=$BUILD_FROM
 FROM $BUILD_FROM
 
-RUN addgroup -g 1000 pbddns && adduser -h /app -u 1000 -G pbddns -s /bin/bash -D pbddns
-
-COPY --from=build --chown=pbddns:pbddns /build/target/release/porkbun_ddns_rs /app
-COPY --from=build --chown=pbddns:pbddns /docker-entrypoint.sh /
+COPY --from=build /build/target/release/porkbun_ddns_rs /app
+COPY --from=build /docker-entrypoint.sh /
 
 RUN apk update && apk --no-cache add tini bash libstdc++
 
@@ -55,7 +53,6 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-USER pbddns
 WORKDIR /app
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/docker-entrypoint.sh"]
