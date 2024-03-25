@@ -19,7 +19,7 @@ RUN cargo build -r
 ARG BUILD_FROM=$BUILD_FROM
 FROM $BUILD_FROM
 
-COPY --from=build /build/target/release/porkbun_ddns_rs /app
+COPY --from=build /build/target/release/porkbun_ddns_rs /
 COPY --from=build /docker-entrypoint.sh /
 
 RUN apk update && apk --no-cache add tini bash libstdc++
@@ -53,6 +53,6 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
-WORKDIR /app
+WORKDIR /
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/docker-entrypoint.sh"]
