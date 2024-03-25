@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bashio
 
 set -e
 
@@ -13,4 +13,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	fi
 fi
 
-source /usr/local/bin/docker-entrypoint.sh "$1"
+couchdb_user="$(bashio::config 'couchdb_user')"
+couchdb_password="$(bashio::config 'couchdb_password')"
+
+COUCHDB_USER=$couchdb_user COUCHDB_PASSWORD=$couchdb_password source /usr/local/bin/docker-entrypoint.sh "$1"

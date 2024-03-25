@@ -32,5 +32,9 @@ LABEL \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
 
+RUN mkdir -p /config
+RUN mv /opt/couchdb/etc/local.ini /config
+RUN ln -s /config/local.ini /opt/couchdb/etc/local.ini
+
 ENTRYPOINT ["tini", "--", "/docker-entrypoint.sh"]
 CMD ["/opt/couchdb/bin/couchdb"]
