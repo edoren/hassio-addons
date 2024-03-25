@@ -2,6 +2,11 @@
 
 set -e
 
+if [ ! -L '/opt/couchdb/etc/local.ini' ]; then
+	mv /opt/couchdb/etc/local.ini /config
+	ln -s /config/local.ini /opt/couchdb/etc/local.ini
+fi
+
 if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	touch /opt/couchdb/etc/local.d/docker.ini
 
