@@ -1,8 +1,9 @@
 name: "CouchDB"
 description: "CouchDB add-on!"
-version: "0.0.2"
+version: "0.0.3"
 slug: "couchdb"
 init: false
+legacy: true
 map:
   - addon_config:rw
 arch:
@@ -14,8 +15,8 @@ ports:
 ports_description:
   5984/tcp: "CouchDB access port"
 options:
-  couchdb_user: null
-  couchdb_password: null
+  COUCHDB_USER: null
+  COUCHDB_PASSWORD: null
 schema:
-  couchdb_user: str
-  couchdb_password: password
+  COUCHDB_USER: str
+  COUCHDB_PASSWORD: password
