@@ -1,6 +1,6 @@
 name: "CouchDB"
 description: "CouchDB add-on!"
-version: "0.0.4"
+version: "0.0.5"
 slug: "couchdb"
 init: false
 legacy: true

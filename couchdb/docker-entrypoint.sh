@@ -3,8 +3,12 @@
 set -e
 
 if [ ! -L '/opt/couchdb/etc/local.ini' ]; then
-	mv /opt/couchdb/etc/local.ini /config
-	ln -s /config/local.ini /opt/couchdb/etc/local.ini
+	if [ ! -f '/config/local.ini' ]; then
+		mv /opt/couchdb/etc/local.ini /config
+	else
+		rm /opt/couchdb/etc/local.ini
+	fi
+	rm ln -s /config/local.ini /opt/couchdb/etc/local.ini
 fi
 
 if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
