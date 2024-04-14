@@ -4,7 +4,7 @@ FROM $BUILD_FROM as build
 
 RUN apk add --no-cache --virtual .namecheap-ddns-docker-build curl unzip go
 
-RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/1.2.0.zip" -o namecheap-ddns-docker.zip
+RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/1.1.0.zip" -o namecheap-ddns-docker.zip
 
 RUN unzip "namecheap-ddns-docker.zip" 
 RUN mv namecheap-ddns-docker-* /build
