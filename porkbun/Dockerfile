@@ -4,7 +4,7 @@ FROM $BUILD_FROM as build
 
 RUN apk add --no-cache --virtual .porkbun-ddns-rs-build curl unzip pkgconfig openssl-dev rust cargo
 
-RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/tags/v0.1.1.zip" -o porkbun-ddns-rs.zip
+RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/tags/v0.1.2.zip" -o porkbun-ddns-rs.zip
 
 RUN unzip "porkbun-ddns-rs.zip" 
 RUN mv porkbun-ddns-rs-* /build
