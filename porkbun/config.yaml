@@ -1,6 +1,6 @@
 name: "Porkbun Dynamic DNS"
 description: "Porkbun Dynamic DNS add-on!"
-version: "1.0.2"
+version: "1.0.3"
 slug: "porkbun_dynamic_dns"
 init: false
 arch:
