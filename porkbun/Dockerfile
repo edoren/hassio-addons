@@ -2,24 +2,19 @@
 ARG BUILD_FROM=alpine
 FROM $BUILD_FROM as build
 
-RUN apk add --no-cache --virtual .porkbun-ddns-rs-build curl unzip pkgconfig openssl-dev rust cargo
-
-RUN curl -sSL "https://github.com/edoren/porkbun-ddns-rs/archive/refs/tags/v0.1.4.zip" -o porkbun-ddns-rs.zip
-
-RUN unzip "porkbun-ddns-rs.zip" 
-RUN mv porkbun-ddns-rs-* /build
+RUN wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.5/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz
+RUN tar -xvf porkbun-ddns-rs.tar.gz
 
 COPY docker-entrypoint.sh /
-RUN chmod 700 /docker-entrypoint.sh
 
-WORKDIR /build
-RUN cargo build -r
+RUN chmod 700 /porkbun_ddns /docker-entrypoint.sh
+RUN chown root:root /porkbun_ddns /docker-entrypoint.sh
 
 # Run image
 ARG BUILD_FROM=$BUILD_FROM
 FROM $BUILD_FROM
 
-COPY --from=build /build/target/release/porkbun_ddns_rs /
+COPY --from=build /porkbun_ddns /
 COPY --from=build /docker-entrypoint.sh /
 
 RUN apk update && apk --no-cache add tini bash libstdc++

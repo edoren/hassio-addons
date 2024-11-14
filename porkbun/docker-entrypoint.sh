@@ -11,10 +11,10 @@ printf -v secrets_json "$secrets_json_fmt" $api_key $secret_key
 echo "$secrets_json" > secrets.json
 
 echo "============================================================"
-echo "$(./porkbun_ddns_rs --version)"
+echo "$(./porkbun_ddns --version)"
 echo ""
 echo "  Domain: $domain"
 echo "  Subdomains: $subdomains"
 echo "============================================================"
 
-./porkbun_ddns_rs "$domain" --subdomains "$subdomains" --secrets secrets.json -t "$time_update"
+./porkbun_ddns "$domain" --subdomains "$subdomains" --secrets secrets.json -t "$time_update"
