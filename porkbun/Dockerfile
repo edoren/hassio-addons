@@ -2,7 +2,7 @@
 ARG BUILD_FROM=alpine
 FROM $BUILD_FROM as build
 
-RUN wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.5/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz
+RUN wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz
 RUN tar -xvf porkbun-ddns-rs.tar.gz
 
 COPY docker-entrypoint.sh /
