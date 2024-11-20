@@ -3,7 +3,7 @@
 api_key="$(bashio::config 'api_key')"
 secret_key="$(bashio::config 'secret_key')"
 domain="$(bashio::config 'domain')"
-subdomains="$(bashio::config 'subdomains')"
+subdomains="$(readarray -t ARRAY <<< "$(bashio::config 'subdomains')"; IFS=','; echo "${ARRAY[*]}")"
 time_update="$(bashio::config 'time_update')"
 
 secrets_json_fmt='{"api_key": "%s", "secret_key": "%s"}'
