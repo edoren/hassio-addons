@@ -2,7 +2,15 @@
 ARG BUILD_FROM=alpine
 FROM $BUILD_FROM as build
 
-RUN wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz
+ARG BUILD_ARCH
+ENV BUILD_ARCH=$BUILD_ARCH
+RUN if [ "$BUILD_ARCH" = "aarch64" ]; then \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz; \
+elif [ "$BUILD_ARCH" = "amd64" ]; then \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz; \
+else \
+    echo "Architecture $BUILD_ARCH not supported" && exit 1; \
+fi
 RUN tar -xvf porkbun-ddns-rs.tar.gz
 
 COPY docker-entrypoint.sh /

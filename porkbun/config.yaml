@@ -6,7 +6,6 @@ init: false
 arch:
   - aarch64
   - amd64
-  - armv7
 options:
   api_key: null
   secret_key: null
@@ -20,3 +19,4 @@ schema:
   subdomains:
     - "match(^(\\*|(?:\\w+)(?:,\\w+)*)$)"
   time_update: int(60,)
+image: edoren/hassio-{arch}-addon-porkbun-ddns
