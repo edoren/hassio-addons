@@ -41,4 +41,4 @@ schema:
   smtp_secure: bool
   smtp_user: str
   smtp_pwd: password
-image: edoren/hassio-addon-rallly
+image: edoren/hassio-{arch}-addon-rallly
