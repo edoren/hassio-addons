@@ -1,6 +1,6 @@
 # Build image
 ARG BUILD_FROM=alpine
-FROM golang:1.23.1-alpine3.20 as build
+FROM golang:1.23.5-alpine3.20 as build
 
 ENV NAMECHEAT_DDNS_VERSION=1.3.0
 RUN wget "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/${NAMECHEAT_DDNS_VERSION}.tar.gz" -O namecheap-ddns-docker.tar.gz
