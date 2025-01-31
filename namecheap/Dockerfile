@@ -1,20 +1,19 @@
 # Build image
 ARG BUILD_FROM=alpine
-FROM $BUILD_FROM as build
+FROM golang:1.23.1-alpine3.20 as build
 
-RUN apk add --no-cache --virtual .namecheap-ddns-docker-build curl unzip go
-
-RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/1.3.0.zip" -o namecheap-ddns-docker.zip
-
-RUN unzip "namecheap-ddns-docker.zip" 
-RUN mv namecheap-ddns-docker-* /build
+ENV NAMECHEAT_DDNS_VERSION=1.3.0
+RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/${NAMECHEAT_DDNS_VERSION}.tar.gz" -o namecheap-ddns-docker.tar.gz
+RUN tar -xvf namecheap-ddns-docker.tar.gz && mv namecheap-ddns-docker-${NAMECHEAT_DDNS_VERSION} build
 
 COPY docker-entrypoint.sh /
 RUN chmod 700 /build/container-entrypoint.sh
 RUN chmod 700 /docker-entrypoint.sh
 
+ARG OS
+ARG ARCH
 WORKDIR /build
-RUN go mod download && go build -ldflags "-s -w" -o ncddns
+RUN go mod download && go build -o ncddns
 
 # Run image
 ARG BUILD_FROM=$BUILD_FROM
