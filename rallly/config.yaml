@@ -14,16 +14,16 @@ options:
   database_port: 5432
   database_user: postgres
   database_password: postgres
-  secret_password: null
+  secret_password: ""
   next_public_base_url: http://localhost:3000
   allowed_emails: []
-  noreply_email: null
-  support_email: null
-  smtp_host: null
+  noreply_email: ""
+  support_email: ""
+  smtp_host: ""
   smtp_port: 587
   smtp_secure: false
-  smtp_user: null
-  smtp_pwd: null
+  smtp_user: ""
+  smtp_pwd: ""
 schema:
   database_name: str
   database_host: str
