@@ -34,8 +34,8 @@ schema:
   next_public_base_url: url
   allowed_emails:
     - email
-  noreply_email: email
-  support_email: email
+  noreply_email: email?
+  support_email: email?
   smtp_host: str
   smtp_port: port
   smtp_secure: bool
