@@ -1,6 +1,6 @@
 name: "Rallly: Group Scheduling Tool"
 description: "Rallly is the fastest and easiest scheduling and collaboration tool."
-version: "1.0.1"
+version: "1.0.2"
 slug: "rallly"
 init: false
 arch:
@@ -14,16 +14,16 @@ options:
   database_port: 5432
   database_user: postgres
   database_password: postgres
-  secret_password: ""
+  secret_password: null
   next_public_base_url: http://localhost:3000
   allowed_emails: []
-  noreply_email: ""
-  support_email: ""
-  smtp_host: ""
+  noreply_email: null
+  support_email: null
+  smtp_host: null
   smtp_port: 587
   smtp_secure: false
-  smtp_user: ""
-  smtp_pwd: ""
+  smtp_user: null
+  smtp_pwd: null
 schema:
   database_name: str
   database_host: str
