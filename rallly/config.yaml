@@ -1,0 +1,44 @@
+name: "Rallly: Group Scheduling Tool"
+description: "Rallly is the fastest and easiest scheduling and collaboration tool."
+version: "1.0.0"
+slug: "rallly"
+init: false
+arch:
+  - aarch64
+  - amd64
+ports:
+  3000/tcp: 3000
+options:
+  database_name: db
+  database_host: db
+  database_port: 5432
+  database_user: postgres
+  database_password: postgres
+  secret_password: null
+  next_public_base_url: http://localhost:3000
+  allowed_emails: []
+  noreply_email: null
+  support_email: null
+  smtp_host: null
+  smtp_port: 587
+  smtp_secure: false
+  smtp_user: null
+  smtp_pwd: null
+schema:
+  database_name: str
+  database_host: str
+  database_port: port
+  database_user: str
+  database_password: password
+  secret_password: password
+  next_public_base_url: url
+  allowed_emails:
+    - email
+  noreply_email: email
+  support_email: email
+  smtp_host: str
+  smtp_port: port
+  smtp_secure: bool
+  smtp_user: str
+  smtp_pwd: password
+image: edoren/hassio-addon-rallly
