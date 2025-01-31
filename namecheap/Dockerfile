@@ -3,7 +3,7 @@ ARG BUILD_FROM=alpine
 FROM golang:1.23.1-alpine3.20 as build
 
 ENV NAMECHEAT_DDNS_VERSION=1.3.0
-RUN curl -sSL "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/${NAMECHEAT_DDNS_VERSION}.tar.gz" -o namecheap-ddns-docker.tar.gz
+RUN wget "https://github.com/navilg/namecheap-ddns-docker/archive/refs/tags/${NAMECHEAT_DDNS_VERSION}.tar.gz" -O namecheap-ddns-docker.tar.gz
 RUN tar -xvf namecheap-ddns-docker.tar.gz && mv namecheap-ddns-docker-${NAMECHEAT_DDNS_VERSION} build
 
 COPY docker-entrypoint.sh /
