@@ -6,9 +6,6 @@ init: false
 arch:
   - aarch64
   - amd64
-  - armv7
-  - armhf
-  - i386
 ports:
   19132/udp: 19132
 ports_description:
