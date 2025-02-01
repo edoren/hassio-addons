@@ -7,7 +7,7 @@ config_min_memory="$(bashio::config 'min_memory')"
 config_max_memory="$(bashio::config 'max_memory')"
 
 latest_build_info=$(wget -O- --no-check-certificate --quiet --method GET --timeout=0 --header "Accept: application/json" "https://download.geysermc.org/v2/projects/geyser/versions/${config_version}/builds/latest")
-if [-z "$api_version_response"]; then
+if [ -z "$latest_build_info" ]; then
     echo "Invalid Geyser version, select a proper version";
     exit 1;
 fi
