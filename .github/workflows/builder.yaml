@@ -42,7 +42,7 @@ jobs:
               for changed_file in ${{ steps.changed_files.outputs.all_changed_files }}; do
                 if [[ "$changed_file" =~ $addon/$monitored_file$ ]]; then
                   if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                    echo "$file was changed adding addon $addon";
+                    echo "$changed_file was changed adding addon $addon";
                     changed_addons+=("\"${addon}\",");
                     break;
                   fi
@@ -128,6 +128,9 @@ jobs:
           tag_regex="^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-${{ matrix.addon }}$"
           if [[ "${{ github.event.ref }}" =~ $tag_regex ]]; then
             echo "BUILD_ARGS=" >> $GITHUB_ENV;
+            echo "Build is going to be published";
+          else
+            echo "Build is going to be tested only";
           fi
 
       - name: Login to DockerHub
