@@ -49,6 +49,11 @@ jobs:
             fi
           done
 
+          if [[ ! "${{ github.event.ref }}" =~ "^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$" ]]; then
+            addon=$(echo "${{ github.event.ref }}" | sed "s/.*-//")
+            changed_addons+=("\"${addon}\",");
+          fi
+
           changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
 
           if [[ -n ${changed} ]]; then
@@ -106,7 +111,7 @@ jobs:
       - name: Check if build has to be published
         run: |
           tag_regex="^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-${{ matrix.addon }}$"
-          if [[ ! ${{ github.event.ref }} =~ $tag_regex ]]; then
+          if [[ ! "${{ github.event.ref }}" =~ $tag_regex ]]; then
             echo "BUILD_ARGS=" >> $GITHUB_ENV;
           fi
 
