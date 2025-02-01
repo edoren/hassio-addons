@@ -1,6 +1,6 @@
 name: "GeyserMC"
 description: "GeyserMC add-on!"
-version: "1.0.1"
+version: "1.0.2"
 slug: "geysermc"
 init: false
 arch:
