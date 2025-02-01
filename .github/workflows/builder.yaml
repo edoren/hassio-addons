@@ -95,7 +95,6 @@ jobs:
           path: "./${{ matrix.addon }}"
 
       - name: Check add-on version & tag version
-        id: check
         run: |
           if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-${{ matrix.addon }}$ ]]; then
             tag_version=$(echo "${{ github.event.ref }}" | sed -E 's|refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)-.*|\1|');
