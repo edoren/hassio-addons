@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - "v*.*.*-*"
   pull_request:
     branches:
       - master
@@ -96,12 +98,16 @@ jobs:
           elif [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
             echo "build_arch=true" >> $GITHUB_OUTPUT;
             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
-            if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
-                echo "BUILD_ARGS=" >> $GITHUB_ENV;
-            fi
           else
             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
             echo "build_arch=false" >> $GITHUB_OUTPUT;
+          fi
+
+      - name: Check if build has to be published
+        run: |
+          tag_regex="^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-${{ matrix.addon }}$"
+          if [[ ! ${{ github.event.ref }} =~ $tag_regex ]]; then
+            echo "BUILD_ARGS=" >> $GITHUB_ENV;
           fi
 
       - name: Login to DockerHub
