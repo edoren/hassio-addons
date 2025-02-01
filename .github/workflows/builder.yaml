@@ -59,13 +59,20 @@ jobs:
 
   build:
     needs: init
-    runs-on: ubuntu-latest
     if: needs.init.outputs.changed == 'true'
+
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
     strategy:
       matrix:
         addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
         arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
+        os: ["ubuntu-latest"]
+        include:
+          - arch: aarch64
+            os: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.os }}
+
     permissions:
       contents: read
       packages: write
