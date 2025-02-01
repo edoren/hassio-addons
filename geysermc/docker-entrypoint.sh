@@ -11,6 +11,7 @@ if [-z "$api_version_response"]; then
     echo "Invalid Geyser version, select a proper version";
     exit 1;
 fi
+
 response_version=$(echo "$latest_build_info" | jq ".version")
 response_build=$(echo "$latest_build_info" | jq ".build")
 
