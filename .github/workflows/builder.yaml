@@ -2,7 +2,7 @@ name: Builder
 
 env:
   BUILD_ARGS: "--test"
-  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs"
+  MONITORED_FILES: "build.yaml config.yaml Dockerfile icon.png logo.png docker-entrypoint.sh"
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        uses: tj-actions/changed-files@v45
 
       - name: Find add-on directories
         id: addons
@@ -38,20 +38,25 @@ jobs:
         run: |
           declare -a changed_addons
           for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon ]]; then
-              for file in ${{ env.MONITORED_FILES }}; do
-                  if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon/$file ]]; then
-                    if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                      changed_addons+=("\"${addon}\",");
-                    fi
+            for monitored_file in ${{ env.MONITORED_FILES }}; do
+              for changed_file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+                if [[ "$changed_file" =~ $addon/$monitored_file$ ]]; then
+                  if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
+                    echo "$file was changed adding addon $addon";
+                    changed_addons+=("\"${addon}\",");
+                    break;
                   fi
+                fi
               done
-            fi
+            done
+            
           done
 
           if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
             addon=$(echo "${{ github.event.ref }}" | sed "s|.*-||");
-            changed_addons+=("\"${addon}\",");
+            if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
+              changed_addons+=("\"${addon}\",");
+            fi
           fi
 
           changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
