@@ -2,8 +2,6 @@ ARG BUILD_FROM=alpine
 FROM $BUILD_FROM
 
 ENV GEYSER_PORT=19132/udp
-ENV GEYSER_MIN_MEM=1G
-ENV GEYSER_MAX_MEM=2G
 
 EXPOSE ${GEYSER_PORT}
 
@@ -11,10 +9,8 @@ WORKDIR /var/lib/geyser
 
 RUN apk update && apk upgrade
 RUN apk add --no-cache tini wget
-RUN apk add openjdk17-jre-headless
+RUN apk add openjdk17-jre-headless jq
 
-RUN mkdir -p /opt/geyser
-RUN wget -O /opt/geyser/Geyser.jar --content-disposition https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/standalone
 RUN mkdir /data
 
 COPY docker-entrypoint.sh /

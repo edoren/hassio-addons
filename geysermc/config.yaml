@@ -1,19 +1,24 @@
 name: "GeyserMC"
 description: "GeyserMC add-on!"
-version: "0.0.3"
+version: "0.0.4"
 slug: "geysermc"
 init: false
 arch:
   - aarch64
   - amd64
   - armv7
+  - armhf
+  - i386
 ports:
   19132/udp: 19132
 ports_description:
   19132/udp: "GeyserMC access port"
-# options:
-#   COUCHDB_USER: null
-#   COUCHDB_PASSWORD: null
-# schema:
-#   COUCHDB_USER: str
-#   COUCHDB_PASSWORD: password
+options:
+  version: latest
+  min_memory: 512M
+  max_memory: 1G
+schema:
+  version: str
+  min_memory: str
+  max_memory: str
+image: edoren/hassio-{arch}-addon-geyser-mc
