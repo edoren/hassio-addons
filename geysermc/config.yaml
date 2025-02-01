@@ -10,6 +10,8 @@ ports:
   19132/udp: 19132
 ports_description:
   19132/udp: "GeyserMC access port"
+backup_exclude:
+  - "*/.bin/**"
 options:
   version: latest
   min_memory: 512M
