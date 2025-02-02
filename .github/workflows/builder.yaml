@@ -148,12 +148,13 @@ jobs:
 
       - name: Update build.yaml with metadata
         uses: mikefarah/yq@v4.45.1
-        cmd: touch ./${{ matrix.addon }}/build.yaml && \
-             yq '.args.BUILD_NAME="${{ steps.info.outputs.name }}" |
-                 .args.BUILD_DESCRIPTION="${{ steps.info.outputs.description }}" |
-                 .args.BUILD_REF="${{ github.ref_name }}" |
-                 .args.BUILD_REPOSITORY="${{ github.repository }}" |
-                 .args.BUILD_DATE="$(date --rfc-3339=seconds)"' -i ./${{ matrix.addon }}/build.yaml
+        with:
+          cmd: touch ./${{ matrix.addon }}/build.yaml && \
+               yq '.args.BUILD_NAME="${{ steps.info.outputs.name }}" |
+                   .args.BUILD_DESCRIPTION="${{ steps.info.outputs.description }}" |
+                   .args.BUILD_REF="${{ github.ref_name }}" |
+                   .args.BUILD_REPOSITORY="${{ github.repository }}" |
+                   .args.BUILD_DATE="$(date --rfc-3339=seconds)"' -i ./${{ matrix.addon }}/build.yaml
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
