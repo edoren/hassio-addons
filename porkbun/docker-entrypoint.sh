@@ -6,12 +6,10 @@ domain="$(bashio::config 'domain')"
 subdomains="$(readarray -t ARRAY <<< "$(bashio::config 'subdomains')"; IFS=','; echo "${ARRAY[*]}")"
 time_update="$(bashio::config 'time_update')"
 
-secrets_json_fmt='{"api_key": "%s", "secret_key": "%s"}'
-printf -v secrets_json "$secrets_json_fmt" $api_key $secret_key
-echo "$secrets_json" > secrets.json
+echo "{\"api_key\": \"$api_key\", \"secret_key\": \"$secret_key\"}" > secrets.json
 
 echo "============================================================"
-echo "$(./porkbun_ddns --version)"
+./porkbun_ddns --version
 echo ""
 echo "  Domain: $domain"
 echo "  Subdomains: $subdomains"
