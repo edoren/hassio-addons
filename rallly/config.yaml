@@ -1,6 +1,6 @@
 name: "Rallly: Group Scheduling Tool"
 description: "Rallly is the fastest and easiest scheduling and collaboration tool."
-version: "1.0.2"
+version: "1.0.3"
 slug: "rallly"
 init: false
 arch:
