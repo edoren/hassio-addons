@@ -46,12 +46,13 @@ jobs:
           all_addons=(${{ steps.addons.outputs.addons }})
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ " ${all_addons[@]} " =~ [[:space:]]${element}[[:space:]] ]]; then
+            if [[ " ${all_addons[@]} " =~ [[:space:]]${{ inputs.addon }}[[:space:]] ]]; then
               changed=("\"${{ inputs.addon }}\"");
             fi
           elif [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
-            if [[ " ${all_addons[@]} " =~ [[:space:]]${element}[[:space:]] ]]; then
-              changed=("\"$(echo "${{ github.event.ref }}" | sed "s|.*-||")\"");
+            addon=$(echo "${{ github.event.ref }}" | sed "s|.*-||");
+            if [[ " ${all_addons[@]} " =~ [[:space:]]${addon}[[:space:]] ]]; then
+              changed=("\"$addon\"");
             fi
           else
             declare -a changed_addons;
