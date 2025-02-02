@@ -5,6 +5,12 @@ env:
   MONITORED_FILES: "build.yaml config.yaml Dockerfile icon.png logo.png docker-entrypoint.sh"
 
 on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: 'The name of the addon to build'
+        type: string
+        required: true
   push:
     branches:
       - master
@@ -37,8 +43,16 @@ jobs:
         if : ${{ steps.changed_files.outputs.any_changed == 'true' }}
         id: changed_addons
         run: |
-          if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
-            changed=("\"$(echo "${{ github.event.ref }}" | sed "s|.*-||")\"");
+          all_addons=(${{ steps.addons.outputs.addons }})
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ " ${all_addons[@]} " =~ [[:space:]]${element}[[:space:]] ]]; then
+              changed=("\"${{ inputs.addon }}\"");
+            fi
+          elif [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
+            if [[ " ${all_addons[@]} " =~ [[:space:]]${element}[[:space:]] ]]; then
+              changed=("\"$(echo "${{ github.event.ref }}" | sed "s|.*-||")\"");
+            fi
           else
             declare -a changed_addons;
             for addon in ${{ steps.addons.outputs.addons }}; do
@@ -52,7 +66,6 @@ jobs:
                 done
               done
             done
-
             changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev);
           fi
 
