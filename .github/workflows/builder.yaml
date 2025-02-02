@@ -28,38 +28,35 @@ jobs:
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v45
+        since_last_remote_commit: ${{ github.event_name == 'push' }}
 
       - name: Find add-on directories
         id: addons
         uses: home-assistant/actions/helpers/find-addons@master
 
       - name: Get changed add-ons
+        if : ${{ steps.changed_files.outputs.any_changed }}
         id: changed_addons
         run: |
-          declare -a changed_addons
-          for addon in ${{ steps.addons.outputs.addons }}; do
-            for monitored_file in ${{ env.MONITORED_FILES }}; do
-              for changed_file in ${{ steps.changed_files.outputs.all_changed_files }}; do
-                if [[ "$changed_file" =~ $addon/$monitored_file$ ]]; then
-                  if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                    echo "$changed_file was changed adding addon $addon";
-                    changed_addons+=("\"${addon}\",");
-                    break;
+          if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
+            changed=("\"$(echo "${{ github.event.ref }}" | sed "s|.*-||")\"");
+          else
+            declare -a changed_addons;
+            for addon in ${{ steps.addons.outputs.addons }}; do
+              for monitored_file in ${{ env.MONITORED_FILES }}; do
+                for changed_file in ${{ steps.changed_files.outputs.all_changed_files }}; do
+                  if [[ "$changed_file" =~ ^$addon/$monitored_file$ ]]; then
+                    if [[ ! "${changed_addons[@]}" =~ "$addon" ]]; then
+                      echo "$changed_file was changed adding addon $addon";
+                      changed_addons+=("\"${addon}\",");
+                    fi
                   fi
-                fi
+                done
               done
             done
-            
-          done
 
-          if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
-            addon=$(echo "${{ github.event.ref }}" | sed "s|.*-||");
-            if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-              changed_addons+=("\"${addon}\",");
-            fi
+            changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev);
           fi
-
-          changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
 
           if [[ -n ${changed} ]]; then
             echo "Changed add-ons: $changed";
