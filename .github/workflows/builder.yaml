@@ -146,12 +146,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get build date
+        id: date
+        run: echo "current=$(date --rfc-3339=seconds)" >> "$GITHUB_OUTPUT"
+
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
         uses: home-assistant/builder@2024.08.2
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
+            --build-arg BUILD_NAME="${{ steps.info.outputs.name }}" \
+            --build-arg BUILD_DESCRIPTION="${{ steps.info.outputs.description }}" \
+            --build-arg BUILD_REF="${{ github.ref_name }}" \
+            --build-arg BUILD_REPOSITORY="${{ github.repository }}" \
+            --build-arg BUILD_DATE="${{ steps.date.outputs.current }}" \
             --${{ matrix.arch }} \
             --target /data/${{ matrix.addon }} \
             --image "${{ steps.check.outputs.image }}" \
