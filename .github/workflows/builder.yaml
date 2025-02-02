@@ -146,11 +146,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Create build.yaml if it does not exist
+        run: touch ./${{ matrix.addon }}/build.yaml
+
       - name: Update build.yaml with metadata
         uses: mikefarah/yq@v4.45.1
         with:
-          cmd: touch ./${{ matrix.addon }}/build.yaml && \
-               yq '.args.BUILD_NAME="${{ steps.info.outputs.name }}" |
+          cmd: yq '.args.BUILD_NAME="${{ steps.info.outputs.name }}" |
                    .args.BUILD_DESCRIPTION="${{ steps.info.outputs.description }}" |
                    .args.BUILD_REF="${{ github.ref_name }}" |
                    .args.BUILD_REPOSITORY="${{ github.repository }}" |
