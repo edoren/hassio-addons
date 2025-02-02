@@ -151,15 +151,15 @@ jobs:
 
       - name: Get addon name
         id: config_name
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4.45.1
         with:
-          cmd: yq '.name' ./${{ matrix.addon }}/config.yaml
+          cmd: yq -r '.name' ./${{ matrix.addon }}/config.yaml
 
       - name: Get addon description
         id: config_description
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4.45.1
         with:
-          cmd: yq '.description' ./${{ matrix.addon }}/config.yaml
+          cmd: yq -r '.description' ./${{ matrix.addon }}/config.yaml
 
       - name: Update build.yaml with metadata
         uses: mikefarah/yq@v4.45.1
