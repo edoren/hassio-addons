@@ -28,15 +28,13 @@ jobs:
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v45
-        with:
-          since_last_remote_commit: ${{ github.event_name == 'push' }}
 
       - name: Find add-on directories
         id: addons
         uses: home-assistant/actions/helpers/find-addons@master
 
       - name: Get changed add-ons
-        if : ${{ steps.changed_files.outputs.any_changed }}
+        if : ${{ steps.changed_files.outputs.any_changed == 'true' }}
         id: changed_addons
         run: |
           if [[ "${{ github.event.ref }}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
@@ -48,7 +46,6 @@ jobs:
                 for changed_file in ${{ steps.changed_files.outputs.all_changed_files }}; do
                   if [[ "$changed_file" =~ ^$addon/$monitored_file$ ]]; then
                     if [[ ! "${changed_addons[@]}" =~ "$addon" ]]; then
-                      echo "$changed_file was changed adding addon $addon";
                       changed_addons+=("\"${addon}\",");
                     fi
                   fi
