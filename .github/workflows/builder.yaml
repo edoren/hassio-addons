@@ -89,8 +89,6 @@ jobs:
         arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
         include:
           - os: ubuntu-latest
-          - arch: aarch64
-            os: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.os }}
 
