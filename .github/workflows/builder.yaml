@@ -149,11 +149,23 @@ jobs:
       - name: Create build.yaml if it does not exist
         run: touch ./${{ matrix.addon }}/build.yaml
 
+      - name: Get addon name
+        id: config_name
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.name' ./${{ matrix.addon }}/config.yaml
+
+      - name: Get addon description
+        id: config_description
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.description' ./${{ matrix.addon }}/config.yaml
+
       - name: Update build.yaml with metadata
         uses: mikefarah/yq@v4.45.1
         with:
-          cmd: yq '.args.BUILD_NAME="${{ steps.info.outputs.name }}" |
-                   .args.BUILD_DESCRIPTION="${{ steps.info.outputs.description }}" |
+          cmd: yq '.args.BUILD_NAME="${{ steps.config_name.outputs.result }}" |
+                   .args.BUILD_DESCRIPTION="${{ steps.config_description.outputs.result }}" |
                    .args.BUILD_REF="${{ github.ref_name }}" |
                    .args.BUILD_REPOSITORY="${{ github.repository }}" |
                    .args.BUILD_DATE="$(date --rfc-3339=seconds)"' -i ./${{ matrix.addon }}/build.yaml
