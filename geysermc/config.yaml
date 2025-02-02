@@ -20,4 +20,4 @@ schema:
   version: str
   min_memory: str
   max_memory: str
-image: edoren/hassio-{arch}-addon-geyser-mc
+image: edoren/hassio-{arch}-addon-geysermc
