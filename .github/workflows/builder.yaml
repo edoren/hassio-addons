@@ -28,7 +28,8 @@ jobs:
       - name: Get changed files
         id: changed_files
         uses: tj-actions/changed-files@v45
-        since_last_remote_commit: ${{ github.event_name == 'push' }}
+        with:
+          since_last_remote_commit: ${{ github.event_name == 'push' }}
 
       - name: Find add-on directories
         id: addons
