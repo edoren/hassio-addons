@@ -1,7 +1,8 @@
 name: "Atuin Server"
 description: "✨ Magical shell history"
-version: "1.0.0"
+version: "1.0.1"
 slug: "atuin"
+init: false
 arch:
   - aarch64
   - amd64
