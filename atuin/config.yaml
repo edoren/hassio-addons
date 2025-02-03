@@ -1,0 +1,24 @@
+name: "Atuin Server"
+description: "✨ Magical shell history"
+version: "1.0.0"
+slug: "atuin"
+arch:
+  - aarch64
+  - amd64
+ports:
+  8888/tcp: 8888
+options:
+  open_registration: false
+  database_name: atuin
+  database_host: localhost
+  database_port: 5432
+  database_user: postgres
+  database_password: postgres
+schema:
+  open_registration: bool
+  database_name: str
+  database_host: str
+  database_port: port
+  database_user: str
+  database_password: password
+image: edoren/hassio-{arch}-atuin
