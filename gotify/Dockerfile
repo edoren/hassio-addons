@@ -12,7 +12,7 @@ RUN git clone --depth 1 --branch v${APP_VERSION} https://github.com/gotify/serve
 
 WORKDIR /server
 
-RUN apk update && apk --no-cache add make bash yarn
+RUN apk update && apk --no-cache add make bash yarn chromium
 RUN make download-tools
 
 # Build UI
