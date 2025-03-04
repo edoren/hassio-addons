@@ -12,7 +12,13 @@ RUN git clone --depth 1 --branch v${APP_VERSION} https://github.com/gotify/serve
 
 WORKDIR /server
 
-RUN apk update && apk --no-cache add make bash yarn chromium
+RUN apk update && apk --no-cache add make bash yarn
+
+ARG BUILD_ARCH
+ENV BUILD_ARCH=$BUILD_ARCH
+RUN if [[ "$BUILD_ARCH" == "arm64" || "$BUILD_ARCH" == "aarch64" || "$BUILD_ARCH" == "armv7" ]]; then \
+        apk update && apk --no-cache add chromium; \
+    fi
 RUN make download-tools
 
 # Build UI
