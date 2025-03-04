@@ -1,0 +1,28 @@
+name: "Gotify Server"
+description: "A simple server for sending and receiving messages"
+version: "1.0.0"
+slug: "gotify_server"
+init: false
+ingress:
+ingress_port: 80
+ingress_stream: true
+arch:
+  - i386
+  - aarch64
+  - amd64
+  - armv7
+ports:
+  80/tcp: 8090
+map:
+  - ssl
+options:
+  database_dialect: sqlite3
+  database_connection: ""
+  password_strength: 10
+  registration: false
+schema:
+  database_dialect: list(sqlite3|mysql|postgres)
+  database_connection: str?
+  password_strength: int(8,)
+  registration: bool
+image: edoren/hassio-{arch}-gotify-server
