@@ -161,6 +161,10 @@ jobs:
         with:
           cmd: yq -r '.description' ./${{ matrix.addon }}/config.yaml
 
+      - name: Get running date
+        id: config_date
+        run: echo "result=$(date --rfc-3339=seconds)" >> $GITHUB_OUTPUT
+
       - name: Update build.yaml with metadata
         uses: mikefarah/yq@v4.45.1
         with:
@@ -168,7 +172,7 @@ jobs:
                    .args.BUILD_DESCRIPTION="${{ steps.config_description.outputs.result }}" |
                    .args.BUILD_REF="${{ github.ref_name }}" |
                    .args.BUILD_REPOSITORY="${{ github.repository }}" |
-                   .args.BUILD_DATE="$(date --rfc-3339=seconds)"' -i ./${{ matrix.addon }}/build.yaml
+                   .args.BUILD_DATE="${{ steps.config_date.outputs.result }}"' -i ./${{ matrix.addon }}/build.yaml
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
