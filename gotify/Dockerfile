@@ -1,16 +1,18 @@
 ARG BUILD_FROM=alpine
 
 # Build image
-FROM node:23-alpine AS builder
+FROM golang:alpine3.18 AS builder
 
 ENV APP_VERSION=2.6.1
 
+WORKDIR /
+
 RUN apk update && apk --no-cache add git
-RUN git clone --depth 1 --branch v${APP_VERSION} https://github.com/gotify/server.git
+RUN git clone --depth 1 --branch v${APP_VERSION} https://github.com/gotify/server.git server
 
 WORKDIR /server
 
-RUN apk update && apk --no-cache add make bash go
+RUN apk update && apk --no-cache add make bash yarn
 RUN make download-tools
 
 # Build UI
