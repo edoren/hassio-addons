@@ -4,7 +4,7 @@ FROM $BUILD_FROM AS build
 
 WORKDIR /
 
-ENV ATUIN_VERSION=18.4.0
+ENV ATUIN_VERSION=18.8.0
 
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
@@ -17,8 +17,10 @@ RUN file_name=""; \
         file_name="atuin-x86_64-unknown-linux-musl"; \
     else \
         echo "Architecture $BUILD_ARCH not supported" && exit 1; \
-    fi && \
-    wget "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/${file_name}.tar.gz" -O "${file_name}.tar.gz"; \
+    fi; \
+    wget "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/${file_name}.tar.gz"; \
+    wget "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/${file_name}.tar.gz.sha256"; \
+    sha256sum -c "${file_name}.tar.gz.sha256"; \
     tar -xvf "${file_name}.tar.gz"; \
     mv "${file_name}/atuin" "/atuin"
 
