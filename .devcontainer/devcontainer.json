@@ -27,9 +27,6 @@
                     }
                 },
                 "terminal.integrated.defaultProfile.linux": "zsh",
-                "editor.formatOnPaste": false,
-                "editor.formatOnSave": true,
-                "editor.formatOnType": true,
                 "files.trimTrailingWhitespace": true
             }
         }
