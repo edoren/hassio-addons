@@ -2,20 +2,26 @@
 ARG BUILD_FROM=alpine
 FROM $BUILD_FROM as build
 
+ENV PORKBUN_DDNS_VERSION=0.1.7
+
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
 RUN if [ "$BUILD_ARCH" = "aarch64" ]; then \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz; \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" && \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz.sha256" && \
+    sha256sum -c "porkbun_ddns-aarch64-unknown-linux-musl.tar.gz.sha256"; \
 elif [ "$BUILD_ARCH" = "amd64" ]; then \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v0.1.6/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz" -O porkbun-ddns-rs.tar.gz; \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz" && \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz.sha256" && \
+    sha256sum -c "porkbun_ddns-x86_64-unknown-linux-musl.tar.gz.sha256"; \
 else \
-    echo "Architecture $BUILD_ARCH not supported" && exit 1; \
+    echo "Architecture $BUILD_ARCH not supported" && exit 1 \
 fi
-RUN tar -xvf porkbun-ddns-rs.tar.gz
+RUN tar -xvf porkbun_ddns-*.tar.gz
 
 COPY docker-entrypoint.sh /
 
-RUN chmod 700 /porkbun_ddns /docker-entrypoint.sh
+RUN chmod 755 /porkbun_ddns /docker-entrypoint.sh
 RUN chown root:root /porkbun_ddns /docker-entrypoint.sh
 
 # Run image
@@ -25,7 +31,7 @@ FROM $BUILD_FROM
 COPY --from=build /porkbun_ddns /
 COPY --from=build /docker-entrypoint.sh /
 
-RUN apk update && apk --no-cache add tini bash libstdc++
+RUN apk add --no-cache tini bash libstdc++
 
 # Build arguments
 ARG BUILD_ARCH
