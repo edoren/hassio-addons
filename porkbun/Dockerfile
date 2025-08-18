@@ -7,15 +7,15 @@ ENV PORKBUN_DDNS_VERSION=0.1.7
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
 RUN if [ "$BUILD_ARCH" = "aarch64" ]; then \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz" && \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz.sha256" && \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz"; \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-aarch64-unknown-linux-musl.tar.gz.sha256"; \
     sha256sum -c "porkbun_ddns-aarch64-unknown-linux-musl.tar.gz.sha256"; \
 elif [ "$BUILD_ARCH" = "amd64" ]; then \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz" && \
-    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz.sha256" && \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz"; \
+    wget "https://github.com/edoren/porkbun-ddns-rs/releases/download/v${PORKBUN_DDNS_VERSION}/porkbun_ddns-x86_64-unknown-linux-musl.tar.gz.sha256"; \
     sha256sum -c "porkbun_ddns-x86_64-unknown-linux-musl.tar.gz.sha256"; \
 else \
-    echo "Architecture $BUILD_ARCH not supported" && exit 1 \
+    echo "Architecture $BUILD_ARCH not supported" && exit 1; \
 fi
 RUN tar -xvf porkbun_ddns-*.tar.gz
 
