@@ -1,7 +1,7 @@
 ARG BUILD_FROM=alpine
 
 # Build image
-FROM golang:alpine AS builder
+FROM golang:1.25.1-alpine AS builder
 
 ENV GOTIFY_VERSION=2.7.2
 
@@ -14,16 +14,12 @@ WORKDIR /server
 
 RUN apk update && apk --no-cache add build-base bash yarn
 
-ARG BUILD_ARCH
-ENV BUILD_ARCH=$BUILD_ARCH
-RUN if [[ "$BUILD_ARCH" == "aarch64" || "$BUILD_ARCH" == "armv7" ]]; then \
-        apk update && apk --no-cache add chromium; \
-    fi
 RUN make download-tools
 
 # Build UI
-RUN cd ui && yarn install
-RUN make build-js
+RUN cd ui; \
+    yarn install; \
+    yarn build
 
 # Build server
 RUN export CGO_ENABLED=1; \
