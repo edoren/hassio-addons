@@ -12,13 +12,13 @@ RUN git clone --depth 1 --branch v${GOTIFY_VERSION} https://github.com/gotify/se
 
 WORKDIR /server
 
-RUN apk --no-cache add build-base binutils bash yarn
-
+RUN apk --no-cache add bash build-base musl-dev
 RUN make download-tools
 
 # Build UI
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
+RUN apk --no-cache add yarn
 RUN cd ui; \
     if [[ "$BUILD_ARCH" == "i386" ]]; then \
         apk --no-cache add jq; \
