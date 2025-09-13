@@ -12,7 +12,7 @@ RUN git clone --depth 1 --branch v${GOTIFY_VERSION} https://github.com/gotify/se
 
 WORKDIR /server
 
-RUN apk --no-cache add bash build-base musl-dev
+RUN apk --no-cache add bash build-base binutils-gold musl-dev
 RUN make download-tools
 
 # Build UI
