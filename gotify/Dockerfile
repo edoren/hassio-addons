@@ -1,4 +1,5 @@
 ARG BUILD_FROM=alpine
+ARG BUILD_ARCH=amd64
 
 # Build image
 FROM golang:1.25.1-alpine3.22 AS builder
@@ -12,12 +13,16 @@ RUN git clone --depth 1 --branch v${GOTIFY_VERSION} https://github.com/gotify/se
 
 WORKDIR /server
 
-RUN apk --no-cache add bash build-base binutils-gold musl-dev
+ARG BUILD_ARCH
+ENV BUILD_ARCH=$BUILD_ARCH
+
+RUN apk --no-cache add bash build-base
+RUN if [[ "$BUILD_ARCH" == "aarch64" || "$BUILD_ARCH" == "armv7" ]]; then \
+        apk --no-cache add binutils-gold; \
+    fi
 RUN make download-tools
 
 # Build UI
-ARG BUILD_ARCH
-ENV BUILD_ARCH=$BUILD_ARCH
 RUN apk --no-cache add yarn
 RUN cd ui; \
     if [[ "$BUILD_ARCH" == "i386" ]]; then \
@@ -28,10 +33,9 @@ RUN cd ui; \
     yarn build
 
 # Build server
-RUN export CGO_ENABLED=1; \
-    export CGO_CFLAGS="-D_LARGEFILE64_SOURCE"; \
+RUN export CGO_CFLAGS="-D_LARGEFILE64_SOURCE"; \
     export LD_FLAGS="-w -s -X main.Version=$(git describe --tags | cut -c 2-) -X main.BuildDate=$(date "+%F-%T") -X main.Commit=$(git rev-parse --verify HEAD) -X main.Mode=prod"; \
-    go build -ldflags="$LD_FLAGS" -o gotify-server
+    CGO_ENABLED=1 go build -ldflags="$LD_FLAGS" -o gotify-server
 
 COPY docker-entrypoint.sh /
 
