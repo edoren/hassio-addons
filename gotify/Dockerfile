@@ -7,17 +7,23 @@ ENV GOTIFY_VERSION=2.7.2
 
 WORKDIR /
 
-RUN apk update && apk --no-cache add git
+RUN apk --no-cache add git
 RUN git clone --depth 1 --branch v${GOTIFY_VERSION} https://github.com/gotify/server.git server
 
 WORKDIR /server
 
-RUN apk update && apk --no-cache add build-base bash yarn
+RUN apk --no-cache add build-base binutils bash yarn
 
 RUN make download-tools
 
 # Build UI
+ARG BUILD_ARCH
+ENV BUILD_ARCH=$BUILD_ARCH
 RUN cd ui; \
+    if [[ "$BUILD_ARCH" == "i386" ]]; then \
+        apk --no-cache add jq; \
+        jq '. + { "resolutions": { "rollup": "npm:@rollup/wasm-node" } }' package.json > tmp.json && mv tmp.json package.json; \
+    fi;
     yarn install; \
     yarn build
 
