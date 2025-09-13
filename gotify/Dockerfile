@@ -1,7 +1,7 @@
 ARG BUILD_FROM=alpine
 
 # Build image
-FROM golang:1.25.1-alpine AS builder
+FROM golang:1.25.1-alpine3.22 AS builder
 
 ENV GOTIFY_VERSION=2.7.2
 
