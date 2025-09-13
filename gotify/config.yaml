@@ -7,7 +7,7 @@ ingress:
 ingress_port: 80
 ingress_stream: true
 arch:
-  - i386
+# - i386
   - aarch64
   - amd64
   - armv7
