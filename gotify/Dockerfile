@@ -23,7 +23,7 @@ RUN cd ui; \
     if [[ "$BUILD_ARCH" == "i386" ]]; then \
         apk --no-cache add jq; \
         jq '. + { "resolutions": { "rollup": "npm:@rollup/wasm-node" } }' package.json > tmp.json && mv tmp.json package.json; \
-    fi;
+    fi; \
     yarn install; \
     yarn build
 
