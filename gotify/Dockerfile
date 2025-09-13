@@ -1,22 +1,22 @@
 ARG BUILD_FROM=alpine
 
 # Build image
-FROM golang:alpine3.18 AS builder
+FROM golang:alpine AS builder
 
-ENV APP_VERSION=2.6.1
+ENV GOTIFY_VERSION=2.7.2
 
 WORKDIR /
 
 RUN apk update && apk --no-cache add git
-RUN git clone --depth 1 --branch v${APP_VERSION} https://github.com/gotify/server.git server
+RUN git clone --depth 1 --branch v${GOTIFY_VERSION} https://github.com/gotify/server.git server
 
 WORKDIR /server
 
-RUN apk update && apk --no-cache add make bash yarn
+RUN apk update && apk --no-cache add build-base bash yarn
 
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
-RUN if [[ "$BUILD_ARCH" == "arm64" || "$BUILD_ARCH" == "aarch64" || "$BUILD_ARCH" == "armv7" ]]; then \
+RUN if [[ "$BUILD_ARCH" == "aarch64" || "$BUILD_ARCH" == "armv7" ]]; then \
         apk update && apk --no-cache add chromium; \
     fi
 RUN make download-tools
@@ -26,13 +26,14 @@ RUN cd ui && yarn install
 RUN make build-js
 
 # Build server
-RUN export CGO_CFLAGS="-D_LARGEFILE64_SOURCE" && \
-    export LD_FLAGS="-w -s -X main.Version=$(git describe --tags | cut -c 2-) -X main.BuildDate=$(date "+%F-%T") -X main.Commit=$(git rev-parse --verify HEAD) -X main.Mode=prod" && \
+RUN export CGO_ENABLED=1; \
+    export CGO_CFLAGS="-D_LARGEFILE64_SOURCE"; \
+    export LD_FLAGS="-w -s -X main.Version=$(git describe --tags | cut -c 2-) -X main.BuildDate=$(date "+%F-%T") -X main.Commit=$(git rev-parse --verify HEAD) -X main.Mode=prod"; \
     go build -ldflags="$LD_FLAGS" -o gotify-server
 
 COPY docker-entrypoint.sh /
 
-RUN chmod 700 /server/gotify-server /docker-entrypoint.sh
+RUN chmod 755 /server/gotify-server /docker-entrypoint.sh
 RUN chown root:root /server/gotify-server /docker-entrypoint.sh
 
 # Run image
