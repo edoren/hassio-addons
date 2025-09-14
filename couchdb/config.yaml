@@ -2,7 +2,7 @@ name: "CouchDB"
 description: "CouchDB add-on!"
 version: "0.0.9"
 slug: "couchdb"
-init: false
+url: https://github.com/edoren/hassio-addons
 legacy: true
 map:
   - addon_config:rw

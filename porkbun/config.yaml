@@ -2,7 +2,7 @@ name: "Porkbun Dynamic DNS"
 description: "Porkbun Dynamic DNS add-on!"
 version: "1.0.7"
 slug: "porkbun_dynamic_dns"
-init: false
+url: https://github.com/edoren/hassio-addons
 arch:
     - aarch64
     - amd64

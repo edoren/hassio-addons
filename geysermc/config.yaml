@@ -2,7 +2,7 @@ name: "GeyserMC"
 description: "GeyserMC add-on!"
 version: "1.0.0"
 slug: "geysermc"
-init: false
+url: https://github.com/edoren/hassio-addons
 arch:
   - aarch64
   - amd64
