@@ -6,39 +6,71 @@ init: false
 arch:
   - aarch64
   - amd64
+webui: http://[HOST]:[PORT:3000]
 ports:
   3000/tcp: 3000
 options:
-  database_name: db
-  database_host: db
+  # https://support.rallly.co/self-hosting/configuration
+  # General
+  next_public_base_url: http://localhost:3000
+  secret_password: null
+  support_email: null
+  # Database
+  database_name: rallly
+  database_host: localhost
   database_port: 5432
   database_user: postgres
-  database_password: postgres
-  secret_password: null
-  next_public_base_url: http://localhost:3000
-  allowed_emails: []
-  noreply_email: null
-  support_email: null
-  smtp_host: null
-  smtp_port: 587
-  smtp_secure: false
-  smtp_user: null
-  smtp_pwd: null
+  database_password: homeassistant
 schema:
+  # General
+  next_public_base_url: url
+  secret_password: password
+  support_email: email
+  noreply_email: email?
+  noreply_email_name: email?
+  initial_admin_email: email?
+  # Database
   database_name: str
   database_host: str
   database_port: port
   database_user: str
   database_password: password
-  secret_password: password
-  next_public_base_url: url
+  # Email (SMTP)
+  smtp_host: str?
+  smtp_port: port?
+  smtp_secure: bool?
+  smtp_user: str?
+  smtp_pwd: password?
+  smtp_reject_unauthorized: bool?
+  # Auth
+  email_login_enabled: bool?
+  registration_enabled: bool?
   allowed_emails:
-    - email
-  noreply_email: email?
-  support_email: email
-  smtp_host: str
-  smtp_port: port
-  smtp_secure: bool
-  smtp_user: str
-  smtp_pwd: password
+    - email?
+  ## Google
+  google_client_id: str?
+  google_client_secret: password?
+  ## Microsoft
+  microsoft_tenant_id: str?
+  microsoft_client_id: str?
+  microsoft_client_secret: password?
+  ## Custom SSO (OIDC)
+  oidc_discovery_url: url?
+  oidc_client_id: str?
+  oidc_client_secret: password?
+  oidc_issuer_url: url?
+  oidc_name: str?
+  oidc_discovery_url: url?
+  oidc_issuer_url: url?
+  oidc_client_id: str?
+  oidc_client_secret: password?
+  oidc_name_claim_path: str?
+  oidc_email_claim_path: str?
+  oidc_picture_claim_path: str?
+  # Storage (S3)
+  s3_bucket_name: str?
+  s3_access_key_id: str?
+  s3_secret_access_key: password?
+  s3_endpoint: url?
+  s3_region: str?
 image: edoren/hassio-{arch}-addon-rallly
