@@ -2,9 +2,7 @@ name: "Gotify Server"
 description: "A simple server for sending and receiving messages"
 version: "1.1.0"
 slug: "gotify_server"
-init: false
-ingress: true
-ingress_port: 80
+webui: http://[HOST]:[PORT:80]
 arch:
   - i386
   - aarch64
