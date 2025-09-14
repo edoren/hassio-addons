@@ -1,50 +1,69 @@
 ARG BUILD_FROM=alpine
-FROM node:20-alpine3.20 AS builder
+FROM node:20-alpine3.22 AS base
 
-ENV RALLLY_VERSION=3.11.2
+ENV RALLLY_VERSION=4.4.1
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# --- Builder Stage ---
+FROM base AS builder
 
 WORKDIR /
-RUN yarn global add turbo
 RUN wget "https://github.com/lukevella/rallly/archive/refs/tags/v${RALLLY_VERSION}.tar.gz" -O rallly.tar.gz
 RUN tar -xvf rallly.tar.gz && mv rallly-${RALLLY_VERSION} app
 WORKDIR /app
+RUN pnpm add -g turbo
 RUN sed -i 's/"native"/"native", "linux-musl-openssl-3.0.x"/' ./packages/database/prisma/schema.prisma
 RUN turbo prune --scope=@rallly/web --docker
 
-FROM node:20-alpine3.20 AS installer
+# --- Installer Stage ---
+FROM base AS installer
 
 WORKDIR /app
-COPY --from=builder /app/.gitignore .gitignore
+COPY --from=builder /app/package.json .
 COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/yarn.lock ./yarn.lock
-RUN yarn --network-timeout 1000000
+COPY --from=builder /app/out/pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
 COPY --from=builder /app/turbo.json turbo.json
-RUN yarn db:generate
+RUN pnpm db:generate
 
 ENV NEXT_PUBLIC_APP_VERSION=$RALLLY_VERSION
 
 ENV NEXT_PUBLIC_SELF_HOSTED=true
 
-RUN SKIP_ENV_VALIDATION=1 yarn build
+RUN SKIP_ENV_VALIDATION=1 pnpm build
 
+# --- Runner Stage ---
 FROM $BUILD_FROM AS runner
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Disable Next.js telemetry for self-hosted instances
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system nodejs \
+  && adduser --system --ingroup nodejs --home /app --shell /bin/bash nextjs
 
 # prisma requirements
 # (see https://www.prisma.io/docs/orm/reference/system-requirements)
-RUN apk update && apk --no-cache add yarn openssl zlib libgcc tini bash
+RUN apk update && apk --no-cache add npm openssl zlib libgcc tini bash pnpm
+
+RUN npm install --global corepack@latest
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 WORKDIR /app
 
-RUN yarn global add prisma
+# Install prisma globally needed for runtime operations like migrations
+RUN pnpm add -g prisma
 
-# Don't run production as root
-USER nextjs
+# Copy Corepack cache from installer stage to avoid runtime download
+COPY --from=installer /root/.cache/node/corepack/ /app/.cache/node/corepack/
 
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/docker-start.sh ./
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
@@ -52,14 +71,25 @@ COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
 COPY --from=installer /app/apps/web/next.config.js .
 COPY --from=installer /app/apps/web/package.json .
 
-ENV PORT=3000
-EXPOSE 3000
-
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
+
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
+
+COPY --chown=nextjs:nodejs --from=installer /app/apps/web/.next/standalone ./
+COPY --chown=nextjs:nodejs --from=installer /app/apps/web/.next/static ./apps/web/.next/static
+COPY --chown=nextjs:nodejs --from=installer /app/apps/web/public ./apps/web/public
+
+# Fix ownership of global pnpm dir - Prisma needs write access to its engines
+# and cache directories within the pnpm global store at runtime
+RUN chown -R nextjs:nodejs /pnpm
+ENV HOME=/app
+USER nextjs
+
+EXPOSE 3000
+ENV PORT=3000
 
 ARG SELF_HOSTED
 ENV NEXT_PUBLIC_SELF_HOSTED=$SELF_HOSTED
@@ -93,6 +123,8 @@ LABEL \
     org.opencontainers.image.created=${BUILD_DATE} \
     org.opencontainers.image.revision=${BUILD_REF} \
     org.opencontainers.image.version=${BUILD_VERSION}
+
+# HEALTHCHECK CMD curl --fail http://localhost:${PORT}/api/status || exit 1
 
 COPY --chown=nextjs:nodejs docker-entrypoint.sh /
 ENTRYPOINT ["/sbin/tini", "--"]
