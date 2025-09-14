@@ -1,5 +1,5 @@
 ARG BUILD_FROM=alpine
-FROM node:20-alpine3.22 AS base
+FROM node:22-alpine3.22 AS base
 
 ENV RALLLY_VERSION=4.4.1
 
