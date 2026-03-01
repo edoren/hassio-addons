@@ -4,7 +4,7 @@ ARG BUILD_ARCH=amd64
 # Build image
 FROM golang:1.25.1-alpine3.22 AS builder
 
-ENV GOTIFY_VERSION=2.7.2
+ENV GOTIFY_VERSION=2.9.1
 
 WORKDIR /
 
