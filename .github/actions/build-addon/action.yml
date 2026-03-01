@@ -1,0 +1,93 @@
+name: 'Build Addon'
+description: 'Composite action to build an addon for a specific architecture'
+inputs:
+  addon-path:
+    description: 'Path to the addon directory'
+    required: true
+  arch:
+    description: 'Architecture to build'
+    required: true
+  build-args:
+    description: 'Additional build arguments'
+    required: false
+    default: ''
+  secrets-docker-hub-username:
+    description: 'DockerHub username'
+    required: true
+  secrets-docker-hub-token:
+    description: 'DockerHub token'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Get information
+      id: info
+      uses: home-assistant/actions/helpers/info@master
+      with:
+        path: "./${{ inputs.addon-path }}"
+
+    - name: Check if add-on should be built
+      id: check
+      shell: bash
+      run: |
+        if [[ "${{ steps.info.outputs.image }}" == "null" ]]; then
+          echo "Image property is not defined, skipping build"
+          echo "build_arch=false" >> $GITHUB_OUTPUT;
+        elif [[ "${{ steps.info.outputs.architectures }}" =~ ${{ inputs.arch }} ]]; then
+          echo "build_arch=true" >> $GITHUB_OUTPUT;
+          echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
+        else
+          echo "${{ inputs.arch }} is not a valid arch for ${{ inputs.addon-path }}, skipping build";
+          echo "build_arch=false" >> $GITHUB_OUTPUT;
+        fi
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.secrets-docker-hub-username }}
+        password: ${{ inputs.secrets-docker-hub-token }}
+
+    - name: Create build.yaml if it does not exist
+      shell: bash
+      run: touch ./${{ inputs.addon-path }}/build.yaml
+
+    - name: Get addon name
+      id: config_name
+      uses: mikefarah/yq@v4.45.1
+      with:
+        cmd: yq -r '.name' ./${{ inputs.addon-path }}/config.yaml
+
+    - name: Get addon description
+      id: config_description
+      uses: mikefarah/yq@v4.45.1
+      with:
+        cmd: yq -r '.description' ./${{ inputs.addon-path }}/config.yaml
+
+    - name: Get running date
+      id: config_date
+      shell: bash
+      run: echo "result=$(date --rfc-3339=seconds)" >> $GITHUB_OUTPUT
+
+    - name: Update build.yaml with metadata
+      uses: mikefarah/yq@v4.45.1
+      with:
+        cmd: yq '.args.BUILD_NAME="${{ steps.config_name.outputs.result }}" |
+                 .args.BUILD_DESCRIPTION="${{ steps.config_description.outputs.result }}" |
+                 .args.BUILD_REF="${{ github.ref_name }}" |
+                 .args.BUILD_REPOSITORY="${{ github.repository }}" |
+                 .args.BUILD_DATE="${{ steps.config_date.outputs.result }}"' -i ./${{ inputs.addon-path }}/build.yaml
+
+    - name: Build ${{ inputs.addon-path }} add-on
+      if: steps.check.outputs.build_arch == 'true'
+      uses: home-assistant/builder@2025.03.0
+      with:
+        args: |
+          ${{ inputs.build-args }} \
+          --${{ inputs.arch }} \
+          --target /data/${{ inputs.addon-path }} \
+          --image "${{ steps.check.outputs.image }}" \
+          --docker-hub "${{ github.repository_owner }}" \
+          --addon
