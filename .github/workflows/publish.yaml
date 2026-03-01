@@ -1,0 +1,179 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: 'The name of the addon to publish'
+        type: string
+        required: true
+      version:
+        description: 'The new version for the addon'
+        type: string
+        required: true
+
+env:
+  BUILD_ARGS: ""
+  MONITORED_FILES: "build.yaml config.yaml Dockerfile icon.png logo.png docker-entrypoint.sh"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build ${{ matrix.addon }} add-on
+    strategy:
+      matrix:
+        addon: ${{ inputs.addon }}
+        arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
+        include:
+          - os: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Get information
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ matrix.addon }}"
+
+      - name: Check if add-on should be built
+        id: check
+        run: |
+          if [[ "${{ steps.info.outputs.image }}" == "null" ]]; then
+            echo "Image property is not defined, skipping build"
+            echo "build_arch=false" >> $GITHUB_OUTPUT;
+          elif [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
+            echo "build_arch=true" >> $GITHUB_OUTPUT;
+            echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
+          else
+            echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
+            echo "build_arch=false" >> $GITHUB_OUTPUT;
+          fi
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create build.yaml if it does not exist
+        run: touch ./${{ matrix.addon }}/build.yaml
+
+      - name: Get addon name
+        id: config_name
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq -r '.name' ./${{ matrix.addon }}/config.yaml
+
+      - name: Get addon description
+        id: config_description
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq -r '.description' ./${{ matrix.addon }}/config.yaml
+
+      - name: Get running date
+        id: config_date
+        run: echo "result=$(date --rfc-3339=seconds)" >> $GITHUB_OUTPUT
+
+      - name: Update build.yaml with metadata
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq '.args.BUILD_NAME="${{ steps.config_name.outputs.result }}" |
+                   .args.BUILD_DESCRIPTION="${{ steps.config_description.outputs.result }}" |
+                   .args.BUILD_REF="${{ github.ref_name }}" |
+                   .args.BUILD_REPOSITORY="${{ github.repository }}" |
+                   .args.BUILD_DATE="${{ steps.config_date.outputs.result }}"' -i ./${{ matrix.addon }}/build.yaml
+
+      - name: Build ${{ matrix.addon }} add-on
+        if: steps.check.outputs.build_arch == 'true'
+        uses: home-assistant/builder@2025.03.0
+        with:
+          args: |
+            ${{ env.BUILD_ARGS }} \
+            --${{ matrix.arch }} \
+            --target /data/${{ matrix.addon }} \
+            --image "${{ steps.check.outputs.image }}" \
+            --docker-hub "${{ github.repository_owner }}" \
+            --addon
+
+  publish:
+    needs: build
+    if: needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    name: Publish changes
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Get information
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ inputs.addon }}"
+
+      - name: Generate new changelog entry
+        id: changelog
+        run: |
+          current_date=$(date --rfc-3339=date)
+          version="${{ inputs.version }}"
+          addon_name="${{ steps.info.outputs.name }}"
+
+          cat > /tmp/changelog_entry.md <<EOF
+          ## [$version] - $current_date
+
+          ### Added
+
+          - New version $version of $addon_name
+          EOF
+
+      - name: Update CHANGELOG.md
+        run: |
+          changelog_file=".${{ inputs.addon }}/CHANGELOG.md"
+          changelog_entry=$(cat /tmp/changelog_entry.md)
+
+          # Check if CHANGELOG.md exists
+          if [ ! -f "$changelog_file" ]; then
+            # Create new CHANGELOG.md
+            cat > "$changelog_file" <<'EOF'
+          # Changelog
+
+          <!--
+          All notable changes to this project will be documented in this file.
+
+          The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+          and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+          -->
+
+          ## [Unreleased]
+
+          ### Added
+
+          - Initial release
+          EOF
+          fi
+
+          # Insert new version at the top
+          sed -i "/## \[Unreleased\]/r /tmp/changelog_entry.md" "$changelog_file"
+
+      - name: Bump version in config.yaml
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq '.version = "${{ inputs.version }}"' -i ./${{ inputs.addon }}/config.yaml
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ".${{ inputs.addon }}/config.yaml"
+          git add ".${{ inputs.addon }}/CHANGELOG.md"
+          git commit -m "chore(${{ inputs.addon }}): bump version to ${{ inputs.version }}"
+
+      - name: Push changes
+        run: |
+          git push origin master
+
+      - name: Create tag
+        run: |
+          git tag "v${{ inputs.version }}-${{ inputs.addon }}"
+          git push origin "v${{ inputs.version }}-${{ inputs.addon }}"
