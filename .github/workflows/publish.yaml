@@ -17,15 +17,9 @@ env:
   MONITORED_FILES: "build.yaml config.yaml Dockerfile icon.png logo.png docker-entrypoint.sh"
 
 jobs:
-  build:
-    name: Build ${{ matrix.arch }} ${{ inputs.addon }} add-on
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
-        include:
-          - os: ubuntu-latest
+  validate:
+    name: Validate configuration
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
@@ -49,7 +43,7 @@ jobs:
           # Calculate the next possible versions
           NEXT_PATCH="${MAJOR}.${MINOR}.$((PATCH + 1))"
           NEXT_MINOR="${MAJOR}.$((MINOR + 1)).0"
-          NEXT_MAJOR="${MAJOR + 1}.0.0"
+          NEXT_MAJOR="$((MAJOR + 1)).0.0"
 
           # Check if the input version matches any of the next versions
           if [[ "${{ inputs.version }}" == "$NEXT_MAJOR" ]]; then
@@ -72,12 +66,29 @@ jobs:
       - name: Check changelog for new version
         if: hashFiles('CHANGELOG.md')
         run: |
-          VERSION="${{ steps.validate_version.outputs.next_version }}"
-          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
-            echo "Error: Changelog section for version $VERSION not found in CHANGELOG.md"
-            echo "Please add a changelog entry for version $VERSION"
+          VERSION="${{ steps.next_version.outputs.next_version }}"
+          if ! grep -q "## \[v$VERSION\]" CHANGELOG.md; then
+            echo "Error: Changelog section for version v$VERSION not found in CHANGELOG.md"
+            echo "Please add a changelog entry for version v$VERSION"
             exit 1
           fi
+
+  build:
+    name: Build ${{ matrix.arch }} ${{ inputs.addon }} add-on
+    runs-on: ${{ matrix.os }}
+
+    needs: validate
+    if: needs.validate.result == 'success'
+
+    strategy:
+      matrix:
+        arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
+        include:
+          - os: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4.2.2
 
       - name: Build ${{ matrix.arch }} ${{ inputs.addon }} add-on
         uses: ./.github/actions/build-addon
