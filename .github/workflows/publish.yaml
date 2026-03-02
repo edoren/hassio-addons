@@ -55,17 +55,55 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4.2.2
 
+      - name: Get current version
+        id: current_version
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq -r '.version' ./${{ inputs.addon }}/config.yaml
+
+      - name: Determine next version
+        id: next_version
+        run: |
+          # Extract major, minor, patch from current version
+          CURRENT_VERSION="${{ steps.current_version.outputs.result }}"
+          MAJOR=$(echo $CURRENT_VERSION | cut -d'.' -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d'.' -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d'.' -f3)
+
+          # Calculate the next possible versions
+          NEXT_PATCH="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          NEXT_MINOR="${MAJOR}.$((MINOR + 1)).0"
+          NEXT_MAJOR="${MAJOR + 1}.0.0"
+
+          # Check if the input version matches any of the next versions
+          if [[ "${{ inputs.version }}" == "$NEXT_MAJOR" ]]; then
+            echo "next_version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "Version matches next major version: ${{ inputs.version }}"
+          elif [[ "${{ inputs.version }}" == "$NEXT_MINOR" ]]; then
+            echo "next_version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "Version matches next minor version: ${{ inputs.version }}"
+          elif [[ "${{ inputs.version }}" == "$NEXT_PATCH" ]]; then
+            echo "next_version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "Version matches next patch version: ${{ inputs.version }}"
+          else
+            echo "Invalid version! Please specify one of:"
+            echo "  - $NEXT_PATCH (patch)"
+            echo "  - $NEXT_MINOR (minor)"
+            echo "  - $NEXT_MAJOR (major)"
+            exit 1
+          fi
+
       - name: Bump version in config.yaml
         uses: mikefarah/yq@v4.45.1
         with:
-          cmd: yq '.version = "${{ inputs.version }}"' -i ./${{ inputs.addon }}/config.yaml
+          cmd: yq '.version = "${{ steps.next_version.outputs.next_version }}"' -i ./${{ inputs.addon }}/config.yaml
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add ".${{ inputs.addon }}/config.yaml"
-          git commit -m "chore(${{ inputs.addon }}): Update addon version to ${{ inputs.version }}"
+          git commit -m "chore(${{ inputs.addon }}): Update addon version to ${{ steps.next_version.outputs.next_version }}"
 
       - name: Push changes
         run: |
@@ -73,5 +111,5 @@ jobs:
 
       - name: Create tag
         run: |
-          git tag "v${{ inputs.version }}-${{ inputs.addon }}"
-          git push origin "v${{ inputs.version }}-${{ inputs.addon }}"
+          git tag "v${{ steps.next_version.outputs.next_version }}-${{ inputs.addon }}"
+          git push origin "v${{ steps.next_version.outputs.next_version }}-${{ inputs.addon }}"
