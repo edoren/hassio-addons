@@ -61,6 +61,16 @@ jobs:
         with:
           cmd: yq -r '.version' ./${{ inputs.addon }}/config.yaml
 
+      - name: Check changelog for new version
+        if: hashFiles('CHANGELOG.md')
+        run: |
+          VERSION="${{ steps.next_version.outputs.next_version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "Error: Changelog section for version $VERSION not found in CHANGELOG.md"
+            echo "Please add a changelog entry for version $VERSION"
+            exit 1
+          fi
+
       - name: Determine next version
         id: next_version
         run: |
