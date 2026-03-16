@@ -1,6 +1,6 @@
 name: "Atuin Server"
 description: "✨ Magical shell history"
-version: "1.0.3"
+version: "1.0.2"
 slug: "atuin"
 url: https://github.com/edoren/hassio-addons
 arch:
