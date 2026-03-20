@@ -1,7 +1,7 @@
 ARG BUILD_FROM=alpine
-FROM node:22-alpine3.22 AS base
+FROM node:24-alpine AS base
 
-ENV RALLLY_VERSION=4.4.1
+ENV RALLLY_VERSION=4.7.4
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -25,7 +25,7 @@ WORKDIR /app
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-alpine,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Build the project
 COPY --from=builder /app/out/full/ .
@@ -49,7 +49,7 @@ RUN addgroup --system nodejs \
 
 # prisma requirements
 # (see https://www.prisma.io/docs/orm/reference/system-requirements)
-RUN apk update && apk --no-cache add npm openssl zlib libgcc tini bash pnpm
+RUN apk update && apk --no-cache add npm openssl zlib libgcc tini bash
 
 RUN npm install --global corepack@latest
 
@@ -59,41 +59,33 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Install prisma globally needed for runtime operations like migrations
-RUN pnpm add -g prisma
+# Install prisma for runtime migrations (must be resolvable from /app)
+RUN npm add prisma@7
 
 # Copy Corepack cache from installer stage to avoid runtime download
 COPY --from=installer /root/.cache/node/corepack/ /app/.cache/node/corepack/
 
+# Copy prisma schema and config for migrations
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/docker-start.sh ./
 COPY --from=builder --chown=nextjs:nodejs /app/packages/database/prisma ./prisma
-
-COPY --from=installer /app/apps/web/next.config.js .
-COPY --from=installer /app/apps/web/package.json .
+COPY --from=builder /app/packages/database/prisma.config.ts ./
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-
-COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
-
 COPY --chown=nextjs:nodejs --from=installer /app/apps/web/.next/standalone ./
 COPY --chown=nextjs:nodejs --from=installer /app/apps/web/.next/static ./apps/web/.next/static
 COPY --chown=nextjs:nodejs --from=installer /app/apps/web/public ./apps/web/public
 
-# Fix ownership of global pnpm dir - Prisma needs write access to its engines
-# and cache directories within the pnpm global store at runtime
-RUN chown -R nextjs:nodejs /pnpm
-ENV HOME=/app
 USER nextjs
 
 EXPOSE 3000
 ENV PORT=3000
+ENV HOME=/app
+ENV HOSTNAME=0.0.0.0
+ENV LOG_LEVEL=warn
 
 ARG SELF_HOSTED
 ENV NEXT_PUBLIC_SELF_HOSTED=$SELF_HOSTED
-ENV HOSTNAME=0.0.0.0
 
 # Build arguments
 ARG BUILD_ARCH
