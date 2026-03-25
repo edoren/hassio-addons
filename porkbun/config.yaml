@@ -17,6 +17,6 @@ schema:
     secret_key: password
     domain: str
     subdomains:
-        - "match(^(\\*|(?:\\w+)(?:,\\w+)*)$)"
+        - "match(^(\\*|(?:[\\w-]+)(?:,[\\w-]+)*)$)"
     time_update: int(60,)
 image: edoren/hassio-{arch}-addon-porkbun-ddns
