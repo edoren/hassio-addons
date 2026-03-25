@@ -1,6 +1,6 @@
 name: "Porkbun Dynamic DNS"
 description: "Porkbun Dynamic DNS add-on!"
-version: "1.0.7"
+version: "1.0.8"
 slug: "porkbun_dynamic_dns"
 url: https://github.com/edoren/hassio-addons
 arch:
