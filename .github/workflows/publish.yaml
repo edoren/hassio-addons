@@ -132,5 +132,5 @@ jobs:
 
       - name: Create tag
         run: |
-          git tag "v${{ steps.next_version.outputs.next_version }}-${{ inputs.addon }}"
-          git push origin "v${{ steps.next_version.outputs.next_version }}-${{ inputs.addon }}"
+          git tag "v${{ inputs.version }}-${{ inputs.addon }}"
+          git push origin "v${{ inputs.version }}-${{ inputs.addon }}"
