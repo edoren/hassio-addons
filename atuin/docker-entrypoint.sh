@@ -14,4 +14,4 @@ export ATUIN_DB_URI="postgres://$database_user:$database_password@$database_host
 
 bashio::log.info "Starting Atuin server..."
 
-./atuin server start
+./atuin-server start
