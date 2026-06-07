@@ -4,35 +4,36 @@ FROM $BUILD_FROM AS build
 
 WORKDIR /
 
-ENV ATUIN_VERSION=18.13.0
+ENV ATUIN_VERSION=18.16.1
 
 ARG BUILD_ARCH
 ENV BUILD_ARCH=$BUILD_ARCH
-RUN file_name=""; \
+RUN arch_suffix=""; \
     if [[ "$BUILD_ARCH" == "aarch64" ]]; then \
         echo "Building for aarch64"; \
-        file_name="atuin-aarch64-unknown-linux-musl"; \
+        arch_suffix="aarch64-unknown-linux-musl"; \
     elif [[ "$BUILD_ARCH" == "amd64" ]]; then \
         echo "Building for amd64"; \
-        file_name="atuin-x86_64-unknown-linux-musl"; \
+        arch_suffix="x86_64-unknown-linux-musl"; \
     else \
         echo "Architecture $BUILD_ARCH not supported" && exit 1; \
     fi; \
+    file_name="atuin-server-${arch_suffix}"; \
     wget "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/${file_name}.tar.gz"; \
     wget "https://github.com/atuinsh/atuin/releases/download/v${ATUIN_VERSION}/${file_name}.tar.gz.sha256"; \
     sha256sum -c "${file_name}.tar.gz.sha256"; \
     tar -xvf "${file_name}.tar.gz"; \
-    mv "${file_name}/atuin" "/atuin"
+    mv "${file_name}/atuin-server" "/atuin-server"
 
 COPY docker-entrypoint.sh /
 
-RUN chmod 700 /atuin /docker-entrypoint.sh
-RUN chown root:root /atuin /docker-entrypoint.sh
+RUN chmod 700 /atuin-server /docker-entrypoint.sh
+RUN chown root:root /atuin-server /docker-entrypoint.sh
 
 # Run image
 FROM $BUILD_FROM AS runner
 
-COPY --from=build /atuin /
+COPY --from=build /atuin-server /
 COPY --from=build /docker-entrypoint.sh /
 
 RUN apk update && apk --no-cache add tini
